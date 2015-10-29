@@ -2,33 +2,28 @@ package io.jmnunezizu.fizzbuzz
 
 class FizzBuzz {
 
-  private val transformers = List(FizzTransformer, BuzzTransformer, BangTransformer)
+  private val transformers = List(FizzT, BuzzT, BangT)
 
   def run(n: Int): String = {
-    val pieces = for {
-      transformer <- transformers
-      result <- transformer(n)
-    } yield result
-
-    if (pieces.isEmpty) n.toString
-    else pieces.mkString
+    val result = transformers.flatMap(_.lift(n))
+    if (result.isEmpty) n.toString
+    else result.mkString
   }
 
 }
 
-abstract class NumberTransformer(val value: String) extends ((Int) => Option[String]) {
-  def apply(n: Int): Option[String] = if (eval(n)) Some(value) else None
-  protected def eval(n: Int): Boolean
+abstract class NumberT(val value: String) extends PartialFunction[Int, String] {
+  def apply(n: Int): String = value
 }
 
-case object FizzTransformer extends NumberTransformer("Fizz") {
-  override def eval(n: Int): Boolean = (n % 3) == 0
+case object FizzT extends NumberT("Fizz") {
+  override def isDefinedAt(n: Int) = (n % 3) == 0
 }
 
-case object BuzzTransformer extends NumberTransformer("Buzz") {
-  override def eval(n: Int): Boolean = (n % 5) == 0
+case object BuzzT extends NumberT("Buzz") {
+  override def isDefinedAt(n: Int) = (n % 5) == 0
 }
 
-case object BangTransformer extends NumberTransformer("Bang") {
-  override def eval(n: Int): Boolean = (n % 7) == 0
+case object BangT extends NumberT("Bang") {
+  override def isDefinedAt(n: Int) = (n % 7) == 0
 }
